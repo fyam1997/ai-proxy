@@ -1,12 +1,24 @@
-import http from "http"
+import express from "express"
 
-const ports = [9020, 9021]
+import { createProxyMiddleware } from "http-proxy-middleware"
 
-for (let port of ports) {
-    const server = http.createServer((req, res) => {
-        res.end(`Server ${port}`)
-    })
-    server.listen(port, () => {
-        console.log(`Server running on http://localhost:${port}`)
-    })
-}
+const app = express()
+
+const PORT = 9021
+const HOST = "localhost"
+const API_SERVICE_URL = "https://api.deepseek.com"
+
+app.use(
+    "/ai",
+    createProxyMiddleware({
+        target: API_SERVICE_URL,
+        changeOrigin: true,
+        pathRewrite: {
+            [`^/ai`]: "",
+        },
+    }),
+)
+
+app.listen(PORT, HOST, () => {
+    console.log(`Starting Proxy at ${HOST}:${PORT}`)
+})
